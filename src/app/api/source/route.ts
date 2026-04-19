@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { codeToHtml } from 'shiki'
 import { getAllSlugs } from '@/lib/registry'
 
 export async function GET(req: NextRequest) {
@@ -25,7 +26,11 @@ export async function GET(req: NextRequest) {
       'Component.tsx'
     )
     const source = readFileSync(filePath, 'utf-8')
-    return NextResponse.json({ source })
+    const highlighted = await codeToHtml(source, {
+      lang: 'tsx',
+      theme: 'github-dark',
+    })
+    return NextResponse.json({ source, highlighted })
   } catch {
     return NextResponse.json({ error: 'source not found' }, { status: 404 })
   }

@@ -20,16 +20,23 @@ const DIFFICULTY_STYLES = {
   advanced:     'bg-red-900/50 text-red-400',
 }
 
-async function fetchSource(slug: string): Promise<string> {
+interface SourceData {
+  source: string
+  highlighted: string
+}
+
+async function fetchSource(slug: string): Promise<SourceData | null> {
   const res = await fetch(`/api/source?slug=${slug}`)
-  if (!res.ok) return ''
+  if (!res.ok) return null
   const data = await res.json()
-  return data.source ?? ''
+  if (!data.source || !data.highlighted) return null
+  return { source: data.source, highlighted: data.highlighted }
 }
 
 export function ExperimentModal({ meta, onClose }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('about')
-  const [sourceCode, setSourceCode] = useState<string | null>(null)
+  const [sourceData, setSourceData] = useState<SourceData | null | false>(null)
+  // null = not yet fetched, false = fetch failed, SourceData = ready
 
   // Close on Escape
   useEffect(() => {
@@ -42,15 +49,15 @@ export function ExperimentModal({ meta, onClose }: Props) {
 
   // Fetch source when switching to code tab
   useEffect(() => {
-    if (activeTab === 'code' && meta && sourceCode === null) {
-      fetchSource(meta.slug).then(setSourceCode)
+    if (activeTab === 'code' && meta && sourceData === null) {
+      fetchSource(meta.slug).then((data) => setSourceData(data ?? false))
     }
-  }, [activeTab, meta, sourceCode])
+  }, [activeTab, meta, sourceData])
 
   // Reset state when a new experiment opens
   useEffect(() => {
     setActiveTab('about')
-    setSourceCode(null)
+    setSourceData(null)
   }, [meta?.slug])
 
   if (!meta) return null
@@ -155,16 +162,19 @@ export function ExperimentModal({ meta, onClose }: Props) {
 
             {activeTab === 'code' && (
               <div className="h-full">
-                {sourceCode === null ? (
+                {sourceData === null ? (
                   <div className="p-6 text-neutral-500 text-sm">
                     Loading source...
                   </div>
-                ) : sourceCode === '' ? (
+                ) : sourceData === false ? (
                   <div className="p-6 text-neutral-500 text-sm">
                     Source not available.
                   </div>
                 ) : (
-                  <CodeBlock code={sourceCode} language="tsx" />
+                  <CodeBlock
+                    source={sourceData.source}
+                    highlighted={sourceData.highlighted}
+                  />
                 )}
               </div>
             )}
