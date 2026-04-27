@@ -7,6 +7,7 @@ import { ExperimentMeta } from '@/types'
 const metaModules: Record<string, () => Promise<{ meta: ExperimentMeta }>> = {
   'magnetic-button': () => import('@/experiments/magnetic-button/meta'),
   'cursor-lag-trail': () => import('@/experiments/cursor-lag-trail/meta'),
+  'text-scramble': () => import('@/experiments/text-scramble/meta'),
 }
 
 // ─── Component modules ───────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ const componentModules: Record<
 > = {
   'magnetic-button': () => import('@/experiments/magnetic-button/Component'),
   'cursor-lag-trail': () => import('@/experiments/cursor-lag-trail/Component'),
+  'text-scramble': () => import('@/experiments/text-scramble/Component'),
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
