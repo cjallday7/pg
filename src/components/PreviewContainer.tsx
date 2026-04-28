@@ -38,6 +38,7 @@ export function PreviewContainer({ component: Component, isCardPreview = false }
           position: 'absolute',
           top: 0,
           left: 0,
+          pointerEvents: 'none',
         }}
       >
         <Suspense fallback={<PreviewSkeleton />}>

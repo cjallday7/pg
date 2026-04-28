@@ -29,6 +29,11 @@ const experiments: ExperimentEntry[] = [
     loadMeta:  () => import('@/experiments/infinite-marquee/meta'),
     component: lazy(() => import('@/experiments/infinite-marquee/Component')),
   },
+  {
+    slug: 'scroll-horizontal',
+    loadMeta:  () => import('@/experiments/scroll-horizontal/meta'),
+    component: lazy(() => import('@/experiments/scroll-horizontal/Component')),
+  },
 ]
 
 // ─── Public API ──────────────────────────────────────────────────────────────
