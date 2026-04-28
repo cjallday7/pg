@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { ExperimentMeta } from '@/types'
 import { PreviewContainer } from './PreviewContainer'
@@ -8,11 +8,17 @@ import { CodeBlock } from './CodeBlock'
 import { getLazyComponent } from '@/lib/registry'
 
 interface Props {
-  meta: ExperimentMeta | null
+  meta: ExperimentMeta
   onClose: () => void
 }
 
 type Tab = 'about' | 'code'
+
+type SourceState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: { source: string; highlighted: string } }
+  | { status: 'error' }
 
 const DIFFICULTY_STYLES = {
   beginner:     'bg-green-900/50 text-green-400',
@@ -20,25 +26,18 @@ const DIFFICULTY_STYLES = {
   advanced:     'bg-red-900/50 text-red-400',
 }
 
-interface SourceData {
-  source: string
-  highlighted: string
-}
-
-async function fetchSource(slug: string): Promise<SourceData | null> {
+async function fetchSource(slug: string) {
   const res = await fetch(`/api/source?slug=${slug}`)
   if (!res.ok) return null
   const data = await res.json()
   if (!data.source || !data.highlighted) return null
-  return { source: data.source, highlighted: data.highlighted }
+  return { source: data.source as string, highlighted: data.highlighted as string }
 }
 
 export function ExperimentModal({ meta, onClose }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('about')
-  const [sourceData, setSourceData] = useState<SourceData | null | false>(null)
-  // null = not yet fetched, false = fetch failed, SourceData = ready
+  const [source, setSource] = useState<SourceState>({ status: 'idle' })
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -47,25 +46,25 @@ export function ExperimentModal({ meta, onClose }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  // Fetch source when switching to code tab
   useEffect(() => {
-    if (activeTab === 'code' && meta && sourceData === null) {
-      fetchSource(meta.slug).then((data) => setSourceData(data ?? false))
+    if (activeTab === 'code' && source.status === 'idle') {
+      setSource({ status: 'loading' })
+      fetchSource(meta.slug).then((data) => {
+        setSource(data ? { status: 'success', data } : { status: 'error' })
+      })
     }
-  }, [activeTab, meta, sourceData])
+  }, [activeTab, meta.slug, source.status])
 
-  // Reset state when a new experiment opens
+  // Reset when a different experiment opens
   useEffect(() => {
     setActiveTab('about')
-    setSourceData(null)
-  }, [meta?.slug])
-
-  if (!meta) return null
+    setSource({ status: 'idle' })
+  }, [meta.slug])
 
   const component = getLazyComponent(meta.slug)
 
   return (
-    <AnimatePresence>
+    <>
       {/* Backdrop */}
       <motion.div
         key="backdrop"
@@ -162,18 +161,22 @@ export function ExperimentModal({ meta, onClose }: Props) {
 
             {activeTab === 'code' && (
               <div className="h-full">
-                {sourceData === null ? (
-                  <div className="p-6 text-neutral-500 text-sm">
-                    Loading source...
-                  </div>
-                ) : sourceData === false ? (
-                  <div className="p-6 text-neutral-500 text-sm">
-                    Source not available.
+                {source.status === 'idle' || source.status === 'loading' ? (
+                  <div className="p-6 text-neutral-500 text-sm">Loading source...</div>
+                ) : source.status === 'error' ? (
+                  <div className="p-6 space-y-3">
+                    <p className="text-neutral-500 text-sm">Source not available.</p>
+                    <button
+                      onClick={() => setSource({ status: 'idle' })}
+                      className="text-neutral-400 hover:text-white text-sm transition-colors"
+                    >
+                      Retry
+                    </button>
                   </div>
                 ) : (
                   <CodeBlock
-                    source={sourceData.source}
-                    highlighted={sourceData.highlighted}
+                    source={source.data.source}
+                    highlighted={source.data.highlighted}
                   />
                 )}
               </div>
@@ -181,6 +184,6 @@ export function ExperimentModal({ meta, onClose }: Props) {
           </div>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </>
   )
 }

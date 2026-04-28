@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { ExperimentMeta, Phase } from '@/types'
 import { ExperimentCard } from './ExperimentCard'
 import { ExperimentModal } from './ExperimentModal'
@@ -42,10 +43,15 @@ export function Gallery({ experiments }: Props) {
         )}
       </div>
 
-      <ExperimentModal
-        meta={openMeta}
-        onClose={() => setOpenSlug(null)}
-      />
+      <AnimatePresence>
+        {openMeta && (
+          <ExperimentModal
+            key={openMeta.slug}
+            meta={openMeta}
+            onClose={() => setOpenSlug(null)}
+          />
+        )}
+      </AnimatePresence>
     </>
   )
 }
