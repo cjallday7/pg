@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, type MouseEvent } from 'react'
 
 const ATTRACTION_RADIUS = 80
 const BUTTON_STRENGTH = 0.35
@@ -10,7 +10,7 @@ export default function MagneticButton() {
   const btnRef = useRef<HTMLButtonElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
     const btn = btnRef.current
     if (!btn) return
 

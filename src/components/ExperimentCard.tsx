@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { ExperimentMeta } from '@/types'
 import { PreviewContainer } from './PreviewContainer'
-import { getComponentLoader } from '@/lib/registry'
+import { getLazyComponent } from '@/lib/registry'
 import { PhaseLabel } from './PhaseLabel'
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function ExperimentCard({ meta, onOpen }: Props) {
-  const loader = getComponentLoader(meta.slug)
+  const component = getLazyComponent(meta.slug)
 
   return (
     <motion.article
@@ -24,8 +24,8 @@ export function ExperimentCard({ meta, onOpen }: Props) {
     >
       {/* Live scaled preview */}
       <div className="relative aspect-video">
-        {loader ? (
-          <PreviewContainer loader={loader} isCardPreview />
+        {component ? (
+          <PreviewContainer component={component} isCardPreview />
         ) : (
           <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
             <span className="text-neutral-600 text-sm">Coming soon</span>

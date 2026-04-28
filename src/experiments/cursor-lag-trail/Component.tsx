@@ -30,6 +30,7 @@ export default function CursorLagTrail() {
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
     function loop() {
+      if (!dot || !ring) return
       ringPos.current.x = lerp(ringPos.current.x, dotPos.current.x, LERP_FACTOR)
       ringPos.current.y = lerp(ringPos.current.y, dotPos.current.y, LERP_FACTOR)
       currentScale.current = lerp(currentScale.current, targetScale.current, SCALE_LERP)

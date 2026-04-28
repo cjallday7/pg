@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { ExperimentMeta } from '@/types'
 import { PreviewContainer } from './PreviewContainer'
 import { CodeBlock } from './CodeBlock'
-import { getComponentLoader } from '@/lib/registry'
+import { getLazyComponent } from '@/lib/registry'
 
 interface Props {
   meta: ExperimentMeta | null
@@ -62,7 +62,7 @@ export function ExperimentModal({ meta, onClose }: Props) {
 
   if (!meta) return null
 
-  const loader = getComponentLoader(meta.slug)
+  const component = getLazyComponent(meta.slug)
 
   return (
     <AnimatePresence>
@@ -85,8 +85,8 @@ export function ExperimentModal({ meta, onClose }: Props) {
       >
         {/* Left: full-size preview */}
         <div className="flex-1 min-h-[40vh] md:min-h-0 relative bg-neutral-900">
-          {loader && (
-            <PreviewContainer loader={loader} isCardPreview={false} />
+          {component && (
+            <PreviewContainer component={component} isCardPreview={false} />
           )}
         </div>
 

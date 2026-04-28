@@ -1,9 +1,9 @@
 'use client'
 
-import { Suspense, lazy, ComponentType } from 'react'
+import { Suspense, ComponentType } from 'react'
 
 interface Props {
-  loader: () => Promise<{ default: ComponentType }>
+  component: ComponentType
   isCardPreview?: boolean
 }
 
@@ -11,8 +11,7 @@ function PreviewSkeleton() {
   return <div className="w-full h-full bg-neutral-900 animate-pulse" />
 }
 
-export function PreviewContainer({ loader, isCardPreview = false }: Props) {
-  const Component = lazy(loader)
+export function PreviewContainer({ component: Component, isCardPreview = false }: Props) {
 
   // In the modal (isCardPreview = false) no transform is applied — full size.
   // In the card (isCardPreview = true) we scale down to fit the thumbnail.

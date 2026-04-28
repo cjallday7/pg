@@ -1,44 +1,52 @@
-import { ComponentType } from 'react'
+import { ComponentType, lazy } from 'react'
 import { ExperimentMeta } from '@/types'
 
-// ─── Meta modules ────────────────────────────────────────────────────────────
-// Add one line here each time you finish a new experiment.
-
-const metaModules: Record<string, () => Promise<{ meta: ExperimentMeta }>> = {
-  'magnetic-button': () => import('@/experiments/magnetic-button/meta'),
-  'cursor-lag-trail': () => import('@/experiments/cursor-lag-trail/meta'),
-  'text-scramble': () => import('@/experiments/text-scramble/meta'),
+interface ExperimentEntry {
+  slug: string
+  loadMeta: () => Promise<{ meta: ExperimentMeta }>
+  component: ComponentType
 }
 
-// ─── Component modules ───────────────────────────────────────────────────────
-
-const componentModules: Record<
-  string,
-  () => Promise<{ default: ComponentType }>
-> = {
-  'magnetic-button': () => import('@/experiments/magnetic-button/Component'),
-  'cursor-lag-trail': () => import('@/experiments/cursor-lag-trail/Component'),
-  'text-scramble': () => import('@/experiments/text-scramble/Component'),
-}
+// Add one object here each time you finish a new experiment.
+const experiments: ExperimentEntry[] = [
+  {
+    slug: 'magnetic-button',
+    loadMeta:  () => import('@/experiments/magnetic-button/meta'),
+    component: lazy(() => import('@/experiments/magnetic-button/Component')),
+  },
+  {
+    slug: 'cursor-lag-trail',
+    loadMeta:  () => import('@/experiments/cursor-lag-trail/meta'),
+    component: lazy(() => import('@/experiments/cursor-lag-trail/Component')),
+  },
+  {
+    slug: 'text-scramble',
+    loadMeta:  () => import('@/experiments/text-scramble/meta'),
+    component: lazy(() => import('@/experiments/text-scramble/Component')),
+  },
+  {
+    slug: 'infinite-marquee',
+    loadMeta:  () => import('@/experiments/infinite-marquee/meta'),
+    component: lazy(() => import('@/experiments/infinite-marquee/Component')),
+  },
+]
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 export async function getAllExperiments(): Promise<ExperimentMeta[]> {
   const metas = await Promise.all(
-    Object.entries(metaModules).map(async ([slug, load]) => {
-      const mod = await load()
+    experiments.map(async ({ slug, loadMeta }) => {
+      const mod = await loadMeta()
       return { ...mod.meta, slug }
     })
   )
   return metas.sort((a, b) => a.phase - b.phase)
 }
 
-export function getComponentLoader(
-  slug: string
-): (() => Promise<{ default: ComponentType }>) | null {
-  return componentModules[slug] ?? null
+export function getLazyComponent(slug: string): ComponentType | null {
+  return experiments.find((e) => e.slug === slug)?.component ?? null
 }
 
 export function getAllSlugs(): string[] {
-  return Object.keys(metaModules)
+  return experiments.map((e) => e.slug)
 }

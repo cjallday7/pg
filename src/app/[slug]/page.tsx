@@ -1,20 +1,19 @@
-import { getAllSlugs, getComponentLoader } from '@/lib/registry'
+import { getAllSlugs, getLazyComponent } from '@/lib/registry'
 import { notFound } from 'next/navigation'
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 
 export async function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }))
 }
 
-export default function ExperimentPage({
+export default async function ExperimentPage({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }) {
-  const loader = getComponentLoader(params.slug)
-  if (!loader) notFound()
-
-  const Component = lazy(loader)
+  const { slug } = await params
+  const Component = getLazyComponent(slug)
+  if (!Component) notFound()
 
   return (
     <div className="w-screen h-screen bg-neutral-950 overflow-hidden">

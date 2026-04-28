@@ -1,15 +1,7 @@
 'use client'
 
 import { Phase } from '@/types'
-
-const PHASES: { id: Phase; label: string }[] = [
-  { id: 1, label: 'Cursor & Mouse' },
-  { id: 2, label: 'Scroll' },
-  { id: 3, label: 'Canvas 2D' },
-  { id: 4, label: 'Three.js' },
-  { id: 5, label: 'Shaders' },
-  { id: 6, label: 'Advanced' },
-]
+import { PHASE_OPTIONS } from '@/lib/phases'
 
 interface Props {
   activePhase: Phase | null
@@ -29,7 +21,7 @@ export function FilterBar({ activePhase, onChange }: Props) {
       >
         All
       </button>
-      {PHASES.map((phase) => (
+      {PHASE_OPTIONS.map((phase) => (
         <button
           key={phase.id}
           onClick={() =>
